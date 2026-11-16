@@ -33,9 +33,9 @@ PAGE = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SVM Predictor</title>
+<title>SVM Predictor | AI &amp; ML</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -47,9 +47,9 @@ PAGE = """
     justify-content: center;
     padding: 24px;
     color: #fff;
-    background: linear-gradient(-45deg, #1a0b3b, #5b21b6, #db2777, #f97316, #0ea5e9);
+    background: linear-gradient(-45deg, #050816, #1e1b8f, #5b21b6, #0e7490, #0b1030);
     background-size: 400% 400%;
-    animation: gradientShift 16s ease infinite;
+    animation: gradientShift 18s ease infinite;
     overflow-x: hidden;
   }
   @keyframes gradientShift {
@@ -58,59 +58,75 @@ PAGE = """
     100% { background-position: 0% 50%; }
   }
 
-  /* floating blurred blobs */
-  .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: .45; z-index: 0; }
-  .b1 { width: 320px; height: 320px; background: #22d3ee; top: -80px; left: -80px; }
-  .b2 { width: 380px; height: 380px; background: #f472b6; bottom: -120px; right: -100px; }
+  /* SVM decision-boundary animation */
+  #bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
 
   .card {
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 480px;
-    padding: 38px 34px;
+    max-width: 500px;
+    padding: 36px 34px 30px;
     border-radius: 28px;
-    background: rgba(255, 255, 255, 0.13);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    backdrop-filter: blur(22px);
-    -webkit-backdrop-filter: blur(22px);
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    background: rgba(10, 14, 40, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55), 0 0 60px rgba(139, 92, 246, 0.25);
+  }
+  .card::before {
+    content: "";
+    position: absolute; inset: -1px; z-index: -1;
+    border-radius: 29px;
+    background: linear-gradient(135deg, #22d3ee, #8b5cf6, #ec4899);
+    opacity: .55;
+    filter: blur(14px);
   }
 
-  .logo {
-    width: 64px; height: 64px; margin: 0 auto 14px;
-    border-radius: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px;
-    background: linear-gradient(135deg, #22d3ee, #a855f7, #ec4899);
-    box-shadow: 0 10px 25px rgba(168, 85, 247, .5);
+  .tags { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, .3);
+    background: rgba(255, 255, 255, .08);
+    letter-spacing: .5px;
   }
-  h1 { text-align: center; font-size: 1.7rem; font-weight: 700; letter-spacing: .3px; }
-  .sub { text-align: center; font-weight: 300; font-size: .9rem; opacity: .85; margin: 6px 0 26px; }
+  .tag.a { border-color: #22d3ee; color: #67e8f9; }
+  .tag.b { border-color: #a78bfa; color: #c4b5fd; }
+  .tag.c { border-color: #f472b6; color: #f9a8d4; }
+
+  h1 {
+    text-align: center; font-size: 1.85rem; font-weight: 700; letter-spacing: .3px;
+    background: linear-gradient(90deg, #67e8f9, #c4b5fd, #f9a8d4);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { text-align: center; font-weight: 300; font-size: .88rem; opacity: .85; margin: 6px 0 24px; }
 
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .full { grid-column: 1 / -1; }
 
-  label { display: block; font-size: .78rem; font-weight: 500; margin-bottom: 6px; opacity: .9; letter-spacing: .4px; text-transform: uppercase; }
+  label { display: block; font-size: .74rem; font-weight: 500; margin-bottom: 6px; opacity: .9; letter-spacing: .6px; text-transform: uppercase; color: #bae6fd; }
 
   input, select {
     width: 100%;
     padding: 13px 14px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.08);
     color: #fff;
     font-family: inherit;
     font-size: .95rem;
     outline: none;
     transition: all .25s ease;
   }
-  input::placeholder { color: rgba(255, 255, 255, .6); }
+  input::placeholder { color: rgba(255, 255, 255, .45); }
   select option { color: #1e1b4b; }
   input:focus, select:focus {
-    background: rgba(255, 255, 255, 0.26);
-    border-color: #fff;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #22d3ee;
+    box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.2);
   }
 
   button {
@@ -138,33 +154,38 @@ PAGE = """
     padding: 18px;
     border-radius: 18px;
     text-align: center;
-    font-weight: 600;
-    font-size: 1.15rem;
+    font-weight: 700;
+    font-size: 1.2rem;
     display: none;
     animation: pop .45s ease;
   }
-  .result small { display: block; font-weight: 300; font-size: .78rem; opacity: .9; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
-  .result.yes { display: block; background: linear-gradient(135deg, #10b981, #34d399); box-shadow: 0 10px 25px rgba(16, 185, 129, .45); }
-  .result.no  { display: block; background: linear-gradient(135deg, #f43f5e, #fb923c); box-shadow: 0 10px 25px rgba(244, 63, 94, .45); }
-  .result.err { display: block; background: rgba(0, 0, 0, .35); }
+  .result small { display: block; font-weight: 300; font-size: .74rem; opacity: .9; margin-bottom: 4px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .result.yes { display: block; background: linear-gradient(135deg, #06b6d4, #10b981); box-shadow: 0 10px 28px rgba(6, 182, 212, .5); }
+  .result.no  { display: block; background: linear-gradient(135deg, #ec4899, #f97316); box-shadow: 0 10px 28px rgba(236, 72, 153, .5); }
+  .result.err { display: block; background: rgba(0, 0, 0, .4); font-weight: 500; font-size: .95rem; }
   @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-  footer { text-align: center; margin-top: 20px; font-size: .72rem; opacity: .7; font-weight: 300; }
+  .meta { display: flex; justify-content: space-between; margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: .66rem; opacity: .65; }
+  footer { text-align: center; margin-top: 8px; font-size: .7rem; opacity: .6; font-weight: 300; }
 
   @media (max-width: 480px) {
-    .card { padding: 28px 20px; }
+    .card { padding: 28px 20px 24px; }
     .grid { grid-template-columns: 1fr; }
+    .meta { flex-direction: column; gap: 4px; align-items: center; }
   }
 </style>
 </head>
 <body>
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
+  <canvas id="bg"></canvas>
 
   <main class="card">
-    <div class="logo">&#129302;</div>
+    <div class="tags">
+      <span class="tag a">SVM</span>
+      <span class="tag b">{{ kernel|upper }} KERNEL</span>
+      <span class="tag c">AI / ML</span>
+    </div>
     <h1>SVM Predictor</h1>
-    <p class="sub">Enter the details below to get an instant prediction</p>
+    <p class="sub">Support Vector Machine classifier &mdash; enter details to get a prediction</p>
 
     <div class="grid">
       <div>
@@ -197,10 +218,88 @@ PAGE = """
 
     <button id="btn" onclick="predict()">Predict</button>
     <div id="result" class="result"></div>
-    <footer>Powered by Scikit-learn SVM &bull; Flask</footer>
+
+    <div class="meta">
+      <span>classes: {{ classes }}</span>
+      <span>support vectors: {{ n_sv }}</span>
+      <span>features: {{ n_features }}</span>
+    </div>
+    <footer>Built with Scikit-learn &bull; Flask</footer>
   </main>
 
 <script>
+/* ---------- SVM decision boundary background ---------- */
+(function () {
+  const cv = document.getElementById('bg');
+  const ctx = cv.getContext('2d');
+  let W, H, pts = [];
+
+  function resize() {
+    W = cv.width = window.innerWidth;
+    H = cv.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // random points; class decided by side of a base line (+ a gap so a margin is visible)
+  for (let i = 0; i < 90; i++) {
+    const x = Math.random(), y = Math.random();
+    const d = (x - 0.5) * 0.9 + (y - 0.5) * 0.45;
+    if (Math.abs(d) < 0.07) { i--; continue; }
+    pts.push({ x: x, y: y, c: d > 0 ? 1 : 0, ph: Math.random() * 6.28 });
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2;
+    const ang = Math.atan2(-0.9, 0.45) + Math.sin(t / 4000) * 0.12;
+    const nx = Math.cos(ang + Math.PI / 2), ny = Math.sin(ang + Math.PI / 2);   // normal
+    const tx = Math.cos(ang), ty = Math.sin(ang);                               // along line
+    const L = Math.max(W, H);
+    const margin = 70;
+
+    // hyperplane + margins
+    function line(off, dash, alpha, width) {
+      ctx.beginPath();
+      ctx.setLineDash(dash);
+      ctx.lineWidth = width;
+      ctx.strokeStyle = 'rgba(255,255,255,' + alpha + ')';
+      ctx.moveTo(cx + nx * off - tx * L, cy + ny * off - ty * L);
+      ctx.lineTo(cx + nx * off + tx * L, cy + ny * off + ty * L);
+      ctx.stroke();
+    }
+    line(0, [], 0.45, 2);
+    line(margin, [8, 8], 0.22, 1.5);
+    line(-margin, [8, 8], 0.22, 1.5);
+    ctx.setLineDash([]);
+
+    // points
+    pts.forEach(function (p) {
+      const px = p.x * W + Math.sin(t / 1500 + p.ph) * 6;
+      const py = p.y * H + Math.cos(t / 1700 + p.ph) * 6;
+      const dist = (px - cx) * nx + (py - cy) * ny;
+      const col = p.c ? '244,114,182' : '34,211,238';
+
+      ctx.beginPath();
+      ctx.arc(px, py, 4.5, 0, 6.283);
+      ctx.fillStyle = 'rgba(' + col + ',0.85)';
+      ctx.fill();
+
+      // support vectors = points near the margin
+      if (Math.abs(Math.abs(dist) - margin) < 26) {
+        ctx.beginPath();
+        ctx.arc(px, py, 10, 0, 6.283);
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* ---------- prediction ---------- */
 async function predict() {
   const btn = document.getElementById('btn');
   const box = document.getElementById('result');
@@ -248,7 +347,16 @@ async function predict() {
 
 @app.route("/")
 def home():
-    return render_template_string(PAGE, gender=GENDER, region=REGION, occupation=OCCUPATION)
+    return render_template_string(
+        PAGE,
+        gender=GENDER,
+        region=REGION,
+        occupation=OCCUPATION,
+        kernel=getattr(model, "kernel", "svm"),
+        classes=" / ".join(str(c) for c in getattr(model, "classes_", [])),
+        n_sv=int(sum(getattr(model, "n_support_", [0]))),
+        n_features=len(FEATURES),
+    )
 
 
 @app.route("/predict", methods=["POST"])
