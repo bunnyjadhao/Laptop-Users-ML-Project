@@ -150,20 +150,49 @@ PAGE = """
   button:disabled { opacity: .7; cursor: wait; }
 
   .result {
+    --c: #fff; --g: rgba(255,255,255,.3); --g2: rgba(255,255,255,.05);
+    position: relative;
+    overflow: hidden;
     margin-top: 22px;
-    padding: 18px;
-    border-radius: 18px;
+    padding: 22px 16px 20px;
+    border-radius: 22px;
     text-align: center;
-    font-weight: 700;
-    font-size: 1.2rem;
     display: none;
-    animation: pop .45s ease;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--c);
+    box-shadow: 0 0 34px var(--g), inset 0 0 34px var(--g2);
   }
-  .result small { display: block; font-weight: 300; font-size: .74rem; opacity: .9; margin-bottom: 4px; letter-spacing: 1.5px; text-transform: uppercase; }
-  .result.yes { display: block; background: linear-gradient(135deg, #06b6d4, #10b981); box-shadow: 0 10px 28px rgba(6, 182, 212, .5); }
-  .result.no  { display: block; background: linear-gradient(135deg, #ec4899, #f97316); box-shadow: 0 10px 28px rgba(236, 72, 153, .5); }
-  .result.err { display: block; background: rgba(0, 0, 0, .4); font-weight: 500; font-size: .95rem; }
-  @keyframes pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .result.yes { --c: #22d3ee; --g: rgba(34,211,238,.5); --g2: rgba(16,185,129,.18); display: block; animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
+  .result.no  { --c: #f472b6; --g: rgba(244,114,182,.5); --g2: rgba(249,115,22,.18); display: block; animation: shake .55s ease; }
+  .result.err { display: block; background: rgba(0, 0, 0, .4); border-color: rgba(255,255,255,.25); box-shadow: none; padding: 16px; font-weight: 500; font-size: .95rem; animation: pop .4s ease; }
+
+  .badge { position: relative; width: 92px; height: 92px; margin: 0 auto 10px; color: var(--c); }
+  .badge svg { width: 100%; height: 100%; filter: drop-shadow(0 0 10px var(--c)); }
+  .badge .ring  { fill: rgba(255,255,255,.06); stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 227; stroke-dashoffset: 227; transform: rotate(-90deg); transform-origin: 50% 50%; animation: draw .7s .05s ease forwards; }
+  .badge .mark  { fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 70; stroke-dashoffset: 70; animation: draw .45s .6s ease forwards; }
+  .badge::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--c); animation: pulse 1.8s .9s ease-out infinite; }
+
+  .label { font-family: 'JetBrains Mono', monospace; font-size: .66rem; letter-spacing: 3px; text-transform: uppercase; opacity: .75; }
+  .word {
+    font-size: 2.7rem; font-weight: 800; letter-spacing: 8px; line-height: 1.1; margin: 4px 0 2px; padding-left: 8px;
+    background: linear-gradient(90deg, #67e8f9, #34d399, #67e8f9);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 0 14px var(--g));
+    animation: shine 2.5s linear infinite, rise .5s .35s both;
+  }
+  .result.no .word { background-image: linear-gradient(90deg, #f9a8d4, #fb923c, #f9a8d4); background-size: 200% 100%; }
+  .note { font-size: .78rem; font-weight: 300; opacity: .85; animation: rise .5s .5s both; }
+
+  .spark { position: absolute; left: 50%; top: 56px; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; animation: fly .95s ease-out forwards; }
+
+  @keyframes pop   { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-10px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+  @keyframes draw  { to { stroke-dashoffset: 0; } }
+  @keyframes pulse { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(1.7); opacity: 0; } }
+  @keyframes shine { to { background-position: 200% 0; } }
+  @keyframes rise  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fly   { 0% { transform: translate(-50%, 0) scale(1); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), var(--dy)) scale(0); opacity: 0; } }
 
   .meta { display: flex; justify-content: space-between; margin-top: 20px; font-family: 'JetBrains Mono', monospace; font-size: .66rem; opacity: .65; }
   footer { text-align: center; margin-top: 8px; font-size: .7rem; opacity: .6; font-weight: 300; }
@@ -299,6 +328,39 @@ PAGE = """
   requestAnimationFrame(draw);
 })();
 
+/* ---------- cool result display ---------- */
+function showResult(box, value) {
+  const isYes = value.toLowerCase() === 'yes';
+  box.className = 'result';
+  void box.offsetWidth;                       // restart animations
+  box.className = 'result ' + (isYes ? 'yes' : 'no');
+
+  const mark = isYes
+    ? '<path class="mark" d="M30 50 L43 63 L68 35"/>'
+    : '<path class="mark" d="M35 35 L65 65"/><path class="mark" d="M65 35 L35 65"/>';
+
+  box.innerHTML =
+    '<div class="badge"><svg viewBox="0 0 100 100"><circle class="ring" cx="50" cy="50" r="36"/>' + mark + '</svg></div>' +
+    '<div class="label">Prediction</div>' +
+    '<div class="word">' + value.toUpperCase() + '</div>' +
+    '<div class="note">' + (isYes ? 'Positive class detected' : 'Negative class detected') + '</div>';
+
+  // particle burst
+  const colors = isYes ? ['#22d3ee', '#34d399', '#a78bfa', '#ffffff'] : ['#f472b6', '#fb923c', '#fda4af'];
+  const n = isYes ? 22 : 12;
+  for (let i = 0; i < n; i++) {
+    const sp = document.createElement('span');
+    sp.className = 'spark';
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 90;
+    sp.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    sp.style.setProperty('--dy', (isYes ? Math.sin(ang) * dist : Math.abs(Math.sin(ang)) * dist) + 'px');
+    sp.style.background = colors[i % colors.length];
+    sp.style.animationDelay = (isYes ? 0.55 : 0.1) + 's';
+    box.appendChild(sp);
+  }
+}
+
 /* ---------- prediction ---------- */
 async function predict() {
   const btn = document.getElementById('btn');
@@ -328,9 +390,7 @@ async function predict() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Something went wrong');
 
-    const isYes = String(data.prediction).toLowerCase() === 'yes';
-    box.className = 'result ' + (isYes ? 'yes' : 'no');
-    box.innerHTML = '<small>Prediction</small>' + (isYes ? '\u2705 ' : '\u274C ') + String(data.prediction).toUpperCase();
+    showResult(box, String(data.prediction));
   } catch (err) {
     box.className = 'result err';
     box.innerHTML = err.message;
